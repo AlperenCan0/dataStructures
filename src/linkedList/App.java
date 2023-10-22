@@ -2,18 +2,18 @@ package linkedList;
 
 public class App {
     public static void main(String[] args) {
-        LinkedList<String> names = new LinkedList<>();
+        LinkedList<String> nodes = new LinkedList<>();
 
-        names.insert("Node1");
-        names.insert("Node2");
-        names.insert("Node3");
-        names.insert("Node4");
+        nodes.insert("Node1");
+        nodes.insert("Node2");
+        nodes.insert("Node3");
+        nodes.insert("Node4");
 
-        names.traverse();
+        nodes.traverse();
 
-        names.remove("Node2");
+        nodes.remove("Node2");
         System.out.println();
-        names.traverse();
+        nodes.traverse();
 
         LinkedList<Person> people = new LinkedList<>();
         Person adam = new Person(23, "Adam");
