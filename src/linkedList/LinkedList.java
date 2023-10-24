@@ -4,6 +4,7 @@ public class LinkedList<T extends Comparable<T>> implements List<T> {
 
     private Node<T> root;
     private int numOfItems;
+
     @Override
     public void insert(T data) {
         if(root == null) {

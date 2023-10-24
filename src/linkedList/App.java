@@ -2,7 +2,7 @@ package linkedList;
 
 public class App {
     public static void main(String[] args) {
-        LinkedList<String> nodes = new LinkedList<>();
+        LinkedList<String> nodes = new LinkedList<String>();
 
         nodes.insert("Node1");
         nodes.insert("Node2");
