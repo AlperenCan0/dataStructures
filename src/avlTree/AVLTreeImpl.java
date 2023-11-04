@@ -1,6 +1,6 @@
-package binarySearchTree;
+package avlTree;
 
-public class BinarySearchTreeImpl<T extends Comparable<T>> implements Tree<T> {
+public class AVLTreeImpl<T extends Comparable<T>> implements Tree<T> {
 
     private Node<T> root;
 
@@ -39,6 +39,8 @@ public class BinarySearchTreeImpl<T extends Comparable<T>> implements Tree<T> {
                 // the right child is a NULL, so we create a right child
                 node.setRightChild(new Node<>(data, node));
             }
+            updateHeight(node);
+            settleViolations(node);
         }
     }
 
@@ -63,7 +65,7 @@ public class BinarySearchTreeImpl<T extends Comparable<T>> implements Tree<T> {
         } else {
             // we have found the item we want to remove !!!
 
-                                    // (CASE 1)
+            // (CASE 1)
 
             // if the node is a leaf node (without left and right children)
             if (node.getRightChild() == null && node.getLeftChild() == null) {
@@ -86,9 +88,12 @@ public class BinarySearchTreeImpl<T extends Comparable<T>> implements Tree<T> {
 
                 // remove the node and makes it eligible for GC
                 node = null;
+
+                updateHeight(parent);
+                settleViolations(parent);
             }
 
-                                    // (CASE 2)
+            // (CASE 2)
 
             // when we remove items with a single child
             else if (node.getLeftChild() == null && node.getRightChild() != null) {
@@ -111,6 +116,9 @@ public class BinarySearchTreeImpl<T extends Comparable<T>> implements Tree<T> {
                 // have to update the right child's parent
                 node.getRightChild().setParentNode(parent);
                 node = null;
+
+                updateHeight(parent);
+                settleViolations(parent);
             }
 
             // it is approximately  the same case 2, but we have to deal with left child
@@ -133,6 +141,9 @@ public class BinarySearchTreeImpl<T extends Comparable<T>> implements Tree<T> {
                 // have to update the left child's parent
                 node.getLeftChild().setParentNode(parent);
                 node = null;
+
+                updateHeight(parent);
+                settleViolations(parent);
             }
 
             // remove 2 children
@@ -162,7 +173,7 @@ public class BinarySearchTreeImpl<T extends Comparable<T>> implements Tree<T> {
     }
 
     @Override
-    public void traversal() {
+    public void traverse() {
         // in-order traversal in O(N) linear running time
         if (root == null) {
             return;
@@ -184,42 +195,137 @@ public class BinarySearchTreeImpl<T extends Comparable<T>> implements Tree<T> {
         }
     }
 
-    @Override
-    public T getMin() {
-        if (root == null) {
-            return null;
+    private void settleViolations(Node<T> node) {
+        // we have to check up to the root node
+        while (node != null) {
+            updateHeight(node);
+            settleViolationsHelper(node);
+            node = node.getParentNode();
+        }
+    }
+
+    private void settleViolationsHelper(Node<T> node) {
+        int balance = getBalance(node);
+
+        // left heavy
+        if (balance > 1) {
+            // left-right heavy situation: left rotation
+            if (getBalance(node.getLeftChild()) < 0) {
+                leftRotation(node.getLeftChild());
+            }
+
+            // doubly left heavy situation then just a single right rotation is needed
+            // this is the right rotation
+            rightRotation(node);
+
         }
 
-        // the min item is the leftmost in the tree
-        return getMin(root);
-    }
+        // right heavy
+        if (balance < -1) {
+            // right-left heavy situation: left rotation
+            if (getBalance(node.getRightChild()) > 0) {
+                rightRotation(node.getRightChild());
+            }
 
-    private T getMin(Node<T> node) {
-        if (node.getLeftChild() != null) {
-            return getMin(node.getLeftChild());
+            // doubly right heavy situation then just a single left rotation is needed
+            // this is the left rotation
+            leftRotation(node);
+
         }
-        return node.getData();
     }
 
-    @Override
-    public T getMax() {
-        if (root == null) {
-            return null;
+    // it can be done in O(1)
+    private void rightRotation(Node<T> node) {
+        System.out.println("Rotating right on node: " + node);
+
+        // this is the new root node after rotation
+        Node<T> tempLeftChild = node.getLeftChild();
+        Node<T> grandChild = tempLeftChild.getRightChild();
+
+        // make the rotation - the new root node will be the tempLeftChild
+        tempLeftChild.setRightChild(node);
+        node.setLeftChild(grandChild);
+
+        // we have to handle the parents
+        if (grandChild != null) grandChild.setParentNode(node);
+
+        // we have to handle the parents for the node
+        Node<T> tempParent = node.getParentNode();
+        node.setParentNode(tempLeftChild);
+        tempLeftChild.setParentNode(tempParent);
+
+        // we have to handle the parent
+        if (tempLeftChild.getParentNode() != null && tempLeftChild.getParentNode().getLeftChild() == node){
+            tempLeftChild.getParentNode().setLeftChild(tempLeftChild);
         }
 
-        // the max item is the rightmost item in the tree
-        return getMax(root);
-
-    }
-
-    private T getMax(Node<T> node) {
-        if (node.getRightChild() != null) {
-            return getMax(node.getRightChild());
+        if (tempLeftChild.getParentNode() != null && tempLeftChild.getParentNode().getRightChild() == node){
+            tempLeftChild.getParentNode().setRightChild(tempLeftChild);
         }
-        return node.getData();
+
+        // no parent after rotation because it has become the root node
+        if (node == root) {
+            root = tempLeftChild;
+        }
+        // after rotations the height parameters can change
+        updateHeight(node);
+        updateHeight(tempLeftChild);
+
     }
-    @Override
-    public Node<T> getRoot() {
-        return root;
+    private void leftRotation(Node<T> node) {
+        System.out.println("Rotating left on node: " + node);
+
+        // this is the new root node after rotation
+        Node<T> tempRightChild = node.getRightChild();
+        Node<T> grandChild = tempRightChild.getLeftChild();
+
+        // make the rotation - the new root node will be the tempLeftChild
+        tempRightChild.setLeftChild(node);
+        node.setRightChild(grandChild);
+
+        // we have to handle the parents
+        if (grandChild != null) grandChild.setParentNode(node);
+
+        // we have to handle the parents for the node
+        Node<T> tempParent = node.getParentNode();
+        node.setParentNode(tempRightChild);
+        tempRightChild.setParentNode(tempParent);
+
+        // we have to handle the parent
+        if (tempRightChild.getParentNode() != null && tempRightChild.getParentNode().getLeftChild() == node){
+            tempRightChild.getParentNode().setLeftChild(tempRightChild);
+        }
+
+        if (tempRightChild.getParentNode() != null && tempRightChild.getParentNode().getRightChild() == node){
+            tempRightChild.getParentNode().setRightChild(tempRightChild);
+        }
+
+        // no parent after rotation because it has become the root node
+        if (node == root) {
+            root = tempRightChild;
+        }
+        // after rotations the height parameters can change
+        updateHeight(node);
+        updateHeight(tempRightChild);
+
     }
+
+    // update the height of a given node
+    private void updateHeight(Node<T> node) {
+        node.setHeight(Math.max(height(node.getLeftChild()), height(node.getRightChild())) + 1);
+    }
+
+    // it returns the height parameter for a given node
+    private int height(Node<T> node) {
+        if (node == null) return -1;
+
+        return node.getHeight();
+    }
+
+    // balance factor to decide the left heavy or right heavy case
+    private int getBalance(Node<T> node) {
+        if (node == null) return 0;
+        return height(node.getLeftChild()) - height(node.getRightChild());
+    }
+
 }

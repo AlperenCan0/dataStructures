@@ -8,4 +8,6 @@ public interface Tree<T> {
     void traversal();
     T getMin();
     T getMax();
+    Node<T> getRoot();
+
 }

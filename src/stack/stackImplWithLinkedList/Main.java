@@ -1,6 +1,6 @@
 package stack.stackImplWithLinkedList;
 
-public class App {
+public class Main {
     public static void main(String[] args) {
         Stack<Integer> stringStack = new Stack<>();
 

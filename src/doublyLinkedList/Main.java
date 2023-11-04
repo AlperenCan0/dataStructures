@@ -1,9 +1,6 @@
 package doublyLinkedList;
 
-import java.util.LinkedList;
-import java.util.List;
-
-public class App {
+public class Main {
     public static void main(String[] args) {
 
         DoublyLinkedList<String> nodes = new DoublyLinkedList<>();
